@@ -1,0 +1,31 @@
+[workspace]
+authors = ["fbjr"]
+channels = [
+    "https://conda.modular.com/max-nightly/",
+    "https://conda.modular.com/max/",
+    "conda-forge",
+]
+name = "mojo-sandbox"
+platforms = ["osx-arm64", "linux-64"]
+version = "0.1.0"
+description = "Mojo 1.0 beta hands-on sandbox: SIMD, GPU kernels, small-model inference."
+
+# Pin Mojo to a specific 1.0 beta during the beta — nightly drifts daily.
+# Bump deliberately when crossing a release.
+[dependencies]
+modular = ">=26.3,<26.4"
+python = ">=3.12,<3.13"
+
+[tasks]
+versions = { cmd = "mojo --version && pixi --version", description = "Print Mojo + pixi versions to confirm install." }
+
+# ---- 00-setup ---------------------------------------------------------------
+[tasks.hello-kernel]
+cmd = "mojo run hello_kernel.mojo"
+cwd = "00-setup"
+description = "Run the workspace smoke-test kernel (vector add) on the local GPU backend."
+
+[tasks.hello-test]
+cmd = "mojo test"
+cwd = "00-setup"
+description = "Run the smoke-test test file."
