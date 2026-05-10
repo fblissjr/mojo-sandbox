@@ -50,7 +50,7 @@ pixi run mojo --version
 
 # enter a project
 cd 00-setup
-pixi run hello_kernel
+pixi run hello-kernel
 ```
 
 ## Plan
