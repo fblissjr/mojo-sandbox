@@ -26,6 +26,6 @@ cwd = "00-setup"
 description = "Run the workspace smoke-test kernel (vector add) on the local GPU backend."
 
 [tasks.hello-test]
-cmd = "mojo test"
+cmd = "mojo run test_smoke.mojo"
 cwd = "00-setup"
-description = "Run the smoke-test test file."
+description = "Run the smoke-test file (Mojo 1.0 removed `mojo test`; tests are scripts)."
