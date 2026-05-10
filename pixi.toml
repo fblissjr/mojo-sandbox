@@ -29,3 +29,19 @@ description = "Run the workspace smoke-test kernel (vector add) on the local GPU
 cmd = "mojo run test_smoke.mojo"
 cwd = "00-setup"
 description = "Run the smoke-test file (Mojo 1.0 removed `mojo test`; tests are scripts)."
+
+# ---- 01-tokenizer -----------------------------------------------------------
+[tasks.tokenizer-build]
+cmd = "mkdir -p build && mojo build --emit shared-lib src/mojo_tokenizer.mojo -o build/mojo_tokenizer.so"
+cwd = "01-tokenizer"
+description = "Compile mojo_tokenizer to a Python extension .so."
+
+[tasks.tokenizer-bench]
+cmd = "python bench/bench.py"
+cwd = "01-tokenizer"
+depends-on = ["tokenizer-build"]
+description = "Run the Phase A smoke + microbench against the built .so."
+
+[tasks.tokenizer]
+depends-on = ["tokenizer-bench"]
+description = "Build + bench (Phase A)."
