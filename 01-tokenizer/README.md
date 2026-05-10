@@ -13,15 +13,20 @@ The plan is staged. Each phase is independently committable so failure surfaces 
 ## Numbers on M2 Ultra (12 MB ASCII payload, target byte `'o'`)
 
 ```
-  python str.count() (C)           5.131 ms/call     2.34 GB/s
-  mojo count_byte_scalar           4.686 ms/call     2.56 GB/s   (1.1x over .count())
-  mojo count_byte_simd_16          1.624 ms/call     7.39 GB/s   (3.2x)
-  mojo count_byte_simd_32          1.287 ms/call     9.33 GB/s   (4.0x)
-  mojo count_byte_simd_64          1.153 ms/call    10.41 GB/s   (4.5x)
-  python loop (200 KB only)        6.062 ms/call   0.0330 GB/s   (~315x slower than SIMD-64)
+  python str.count() (C)           5.125 ms/call     2.34 GB/s
+  mojo count_byte_scalar           4.592 ms/call     2.61 GB/s   (1.1x over .count())
+  mojo count_byte_simd_16          1.569 ms/call     7.65 GB/s   (3.3x)
+  mojo count_byte_simd_32          1.250 ms/call     9.60 GB/s   (4.1x)
+  mojo count_byte_simd_64          1.119 ms/call    10.72 GB/s   (4.6x)
+  python loop (200 KB only)        5.894 ms/call   0.0339 GB/s   (~316x slower than SIMD-64)
 ```
 
 Numbers include a Python-str → Mojo-String copy on every call (~12 MB at memcpy speed ≈ 0.4 ms baked in). Phase C will explore zero-copy via Python's buffer protocol for an apples-to-apples comparison.
+
+### Caveats worth knowing
+
+- **NEON width.** M-series silicon has 128-bit SIMD registers = 16 uint8 lanes. `width=16` is the actual hardware vector. `width=32` and `width=64` are loop-unroll variations — the speedup beyond 16 comes from instruction-level parallelism / better pipelining, not wider hardware.
+- **Lane-accumulator trick didn't help here.** The standard popcount-style optimization (accumulate lane-locally, flush horizontal reduce every 255 chunks) was implemented and benchmarked — it slowed everything by ~10%. With ~0.4 ms of the budget eaten by `String(text)` copy, the per-chunk `reduce_add` is not the bottleneck; the compiler already vectorizes it well. The simpler code is also the faster code on this hardware/workload. Phase C's zero-copy fix is what should actually move the needle.
 
 ## Run
 
